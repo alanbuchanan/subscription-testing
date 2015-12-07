@@ -31,7 +31,6 @@ describe('rewards service', function () {
         it('should get a 200 response from the server', function (done) {
 
             nock('http://www.fictional-subscription-service.com')
-            //nock('http://www.sky.com')
                 .get('/rewards')
                 .reply(200, 'OK', {
                     'Content-Type': 'application/json'
