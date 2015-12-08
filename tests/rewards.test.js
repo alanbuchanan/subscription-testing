@@ -5,41 +5,60 @@ var nock = require('nock');
 
 nock.disableNetConnect();
 
-describe('rewards service', function () {
+// Express tests have 'only'
+describe('without express', function () {
 
-    var rewardsClass = require('../lib/rewards');
-    var rewards = new rewardsClass;
-    
-    var subscriptions = require('../lib/subscriptions');
+    describe('rewards service', function () {
 
-    describe('common tests', function () {
+        var rewardsClass = require('../lib/rewards');
+        var rewards = new rewardsClass;
 
-        it('should only have 5 properties', function () {
-            expect(JSON.stringify(subscriptions).split(',')).to.have.length(5);
+        var subscriptions = require('../lib/subscriptions');
+
+        describe('common tests', function () {
+
+            it('should only have 5 properties', function () {
+                expect(JSON.stringify(subscriptions).split(',')).to.have.length(5);
+            });
+
+            it('should know what each subscription should yield', function () {
+                expect(subscriptions.sports).to.equal('CHAMPIONS_LEAGUE_EXTRAS');
+                expect(subscriptions.music).to.equal('N/A');
+                expect(subscriptions.movies).to.equal('BAFTA_AWARDS_INVITATION');
+                expect(subscriptions.news).to.equal('N/A');
+                expect(subscriptions.games).to.equal('GAMES_PREORDER_POTENTIAL');
+            });
         });
 
-        it('should know what each subscription should yield', function () {
-            expect(subscriptions.sports).to.equal('CHAMPIONS_LEAGUE_EXTRAS');
-            expect(subscriptions.music).to.equal('N/A');
-            expect(subscriptions.movies).to.equal('BAFTA_AWARDS_INVITATION');
-            expect(subscriptions.news).to.equal('N/A');
-            expect(subscriptions.games).to.equal('GAMES_PREORDER_POTENTIAL');
-        });
-    });
+        describe('server tests', function () {
+            it('should get a 200 response from the server', function (done) {
 
-    describe('server tests', function () {
-        it('should get a 200 response from the server', function (done) {
+                nock('http://www.fictional-subscription-service.com')
+                    .get('/rewards')
+                    .reply(200, 'OK', {
+                        'Content-Type': 'application/json'
+                    });
 
-            nock('http://www.fictional-subscription-service.com')
-                .get('/rewards')
-                .reply(200, 'OK', {
-                    'Content-Type': 'application/json'
+                rewards.rewardsList(function (error, response) {
+                    expect(response).to.equal('OK');
+                    done();
                 });
+            });
 
-            rewards.rewardsList(function (error, response) {
-                expect(response).to.equal('OK');
-                done();
+            it('should get a list of the customers subscriptions', function (done) {
+                nock('http://www.fictional-subscriptions-service.com')
+                    .get('/rewards')
+                    .reply(200, {});
+
+                rewards.rewardsList(function (error, response) {
+                    expect(response).to.equal({});
+                    done();
+                })
+
+            });
+            it('should check the customers eligibility', function (done) {
+
             })
-        });
+        })
     })
-})
+});
